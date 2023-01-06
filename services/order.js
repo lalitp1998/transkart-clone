@@ -26,6 +26,7 @@ const { getGoodName } = require("./good");
 const googleClient = new Client({});
 const pdf = require("html-pdf");
 const sendEmail = require("../utils/ses");
+const path = require("path");
 const getUserOrders = async (userId) => {
   try {
     const userOrders = await orderModel.find({
@@ -1136,7 +1137,9 @@ const generateInvoice = async (orderDetails) => {
     return new Promise((resolve, reject) => {
       pdf
         .create(html, {
+          phantomPath:path.join(__dirname,"../../node_modules/phantomjs-prebuilt/bin/phantomjs"),
           format: "A3",
+          timeout:5000
         })
         .toBuffer(async function (err, buffer) {
           if (err) {
