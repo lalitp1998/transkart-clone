@@ -1,0 +1,43 @@
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
+const orderSchema = new Schema({
+  userId: { type: String, required: true },
+  source: { type: Object, required: true },
+  stop1: { type: Object, required: false },
+  stop2: { type: Object, required: false },
+  destination: { type: Object, required: true },
+  vehicleId: { type: String, required: true },
+  labourAvailable: { type: Boolean, required: false },
+  numberOfLabours: { type: Number, default: 0 },
+  goodId: { type: String, required: true },
+  pickupTime: { type: String, required: true },
+  typeOfPayment: { type: String, required: true },
+  baseAmount: { type: Number, scale: 2, precision: 20 },
+  cgstAmount: { type: Number, scale: 2, precision: 20 },
+  sgstAmount: { type: Number, scale: 2, precision: 20 },
+  discountId: { type: String, required: false },
+  discountAmount: {
+    type: Number,
+    scale: 2,
+    precision: 20,
+    default: 0,
+  },
+  totalAmount: { type: Number, scale: 2, precision: 20 },
+  pathImage: { type: String, required: false },
+  orderStatus: { type: String, default: "INITIATED" },
+  createdAt: { type: String, required: true },
+  driverId: { type: String, required: false },
+  paymentId: { type: String, required: false },
+  deliveredAt: { type: String, required: false },
+  stop1DeliveredAt: { type: String, required: false },
+  stop2DeliveredAt: { type: String, required: false },
+  senderSignature: { type: String, required: false },
+  orderRating: { type: Number, required: false },
+  orderComment: { type: String, required: false },
+  driverOrderRating: { type: Number, required: false },
+  driverOrderComment: { type: String, required: false },
+  invoice: { type: String, required: false },
+  trackingUrl:{type:String,required:false},
+  cancelledAt:{type:String,required:false}
+});
+module.exports = mongoose.model("Order", orderSchema);
