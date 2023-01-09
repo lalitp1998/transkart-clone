@@ -97,7 +97,7 @@ const getDriverOrders = async (driverId) => {
 
 const getAllOrders = async () => {
   try {
-    const allOrders = await orderModel.find({});
+    const allOrders = await orderModel.find({}).limit(50);
     let orders = [];
     for (let i = 0; i < allOrders.length; i++) {
       const userDetails = await userModel.findById(allOrders[i].userId);
