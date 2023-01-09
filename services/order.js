@@ -70,7 +70,7 @@ const getDriverOrders = async (driverId) => {
     const driverOrders = await orderModel.find({
       driverId,
       //   orderStatus: "Claimed",
-    });
+    }).limit(20);
     let driverOrdersWithDetails = [];
     const driverDetails = await driverModel.findById(driverId);
     let vehicleName = await getVehicleName(driverDetails.vehicleId);
