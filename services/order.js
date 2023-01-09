@@ -521,7 +521,7 @@ const cancelOrder = async (orderId) => {
       { $set: { orderStatus: "CANCELLED" } }, //025415
       { new: true }
     );
-    await generateInvoice(orderDetails);
+    // await generateInvoice(orderDetails);
     let user = await userModel.findOne({ _id: orderDetails.userId });
     let vehicleName = await getVehicleName(orderDetails.vehicleId);
     let goodName = await getGoodName(orderDetails.goodId);
@@ -733,11 +733,11 @@ const orderDelivered = async (orderData) => {
       );
     }
     await deleteOrderRedis(orderDetails._id);
-    await generateInvoice({
-      ...orderDetailsData,
-      vehicleNumber: driverDetails.vehicleNumber,
-      driverName: driverDetails.driverName,
-    });
+    // await generateInvoice({
+    //   ...orderDetailsData,
+    //   vehicleNumber: driverDetails.vehicleNumber,
+    //   driverName: driverDetails.driverName,
+    // });
     driverLeave(driverDetails._id);
     return { data: orderDetailsData };
   } catch (error) {
