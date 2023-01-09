@@ -3,6 +3,8 @@ const polygonModel = require("../models/accountSetting");
 const walletService = require("../services/wallet");
 const { currentDate } = require("../utils/common");
 const { Client } = require("@googlemaps/google-maps-services-js");
+const accountSetting = require("../models/accountSetting");
+const accountSettingModal = require("../models/accountSetting");
 const googleClient = new Client({});
 require("dotenv").config();
 
@@ -40,6 +42,7 @@ const testUser = async (userData) => {
           createdAt: date,
           updatedAt: date,
         });
+        const supportDetails=await accountSettingModal.findOne({});
         await walletService.addWallet({
           userId: newUser._id,
           type: "user",
@@ -48,9 +51,16 @@ const testUser = async (userData) => {
           createdAt: date,
           updatedAt: date,
         });
-        return { data: newUser };
+        return { data: {...newUser._doc,supportDetails:{
+          phone: supportDetails.phone,
+          email: supportDetails.email
+        } }};
       } else {
-        return { data: userDetails };
+        const supportDetails=await accountSettingModal.findOne({});
+        return { data: {...userDetails._doc,supportDetails:{
+          phone: supportDetails.phone,
+          email: supportDetails.email
+        }} };
       }
     } else {
       return { error: "Wrong OTP!" };

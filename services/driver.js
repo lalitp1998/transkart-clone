@@ -7,6 +7,7 @@ const moment = require("moment");
 const { currentDate } = require("../utils/common");
 const accountSetting = require("../models/accountSetting");
 const { getVehicleName } = require("./vehicle");
+const accountSettingModal = require("../models/accountSetting");
 let Pinpoint = new aws.Pinpoint({
   accessKeyId: process.env.ACCESS_KEY_ID,
   secretAccessKey: process.env.SECRET_ACCESS_KEY,
@@ -195,10 +196,18 @@ const testDriver = async (driverData) => {
             lastOnline: date,
             updatedAtByDriver: date,
           });
-          return { data: newDriver };
+          const supportDetails=await accountSettingModal.findOne({})
+          return { data: {...newDriver._doc,supportDetails:{
+            phone: supportDetails.phone,
+            email: supportDetails.email
+          }} };
         } else {
           let vehicleName = await getVehicleName(driverDetails.vehicleId);
-          return { data: { ...driverDetails._doc, vehicleType: vehicleName } };
+          const supportDetails=await accountSettingModal.findOne({})
+          return { data: { ...driverDetails._doc, vehicleType: vehicleName,supportDetails:{
+            phone: supportDetails.phone,
+            email: supportDetails.email
+          } } };
         }
       } else {
         return { error: "Wrong OTP!" };
