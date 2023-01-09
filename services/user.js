@@ -4,6 +4,8 @@ const walletService = require("../services/wallet");
 const { currentDate } = require("../utils/common");
 const { Client } = require("@googlemaps/google-maps-services-js");
 const googleClient = new Client({});
+require("dotenv").config();
+
 const findUserByPhoneNumber = async (phoneNumber) => {
   try {
     let userDetails = await userModel.findOne({
@@ -32,10 +34,12 @@ const testUser = async (userData) => {
     let testOTP = "3698";
     if (userData.otp == testOTP) {
       if (!userDetails) {
+        let date = currentDate();
         let newUser = await userModel.create({
           phoneNumber: userData.phoneNumber,
+          createdAt: date,
+          updatedAt: date,
         });
-        let date = currentDate();
         await walletService.addWallet({
           userId: newUser._id,
           type: "user",
@@ -76,7 +80,20 @@ const addUser = async (userData) => {
     if (userDetails) {
       return { error: "User ALready Exist" };
     } else {
-      let newUser = await userModel.create(userData);
+      let date = currentDate();
+      let newUser = await userModel.create({
+        ...userData,
+        createdAt: date,
+        updatedAt: date,
+      });
+      await walletService.addWallet({
+        userId: newUser._id,
+        type: "user",
+        balance: 0,
+        minBalance: 100,
+        createdAt: date,
+        updatedAt: date,
+      });
       return { data: newUser };
     }
   } catch (error) {
@@ -86,7 +103,7 @@ const addUser = async (userData) => {
 };
 const findAllUsers = async () => {
   try {
-    let userDetails = await userModel.find();
+    let userDetails = await userModel.find().sort({ createdAt: "desc" });
     return { data: userDetails };
   } catch (error) {
     return { error: error };

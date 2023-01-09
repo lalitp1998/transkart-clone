@@ -6,9 +6,11 @@ const cron = require("node-cron");
 const { redisClient, pub, sub } = require("./redis");
 const { socketConnection } = require("./socket");
 const driverModel = require("./models/driver");
+const orderModel=require("./models/order");
+const userModel=require("./models/user");
 require("dotenv").config();
 const { messaging } = require("./firebase-config");
-const {generateSuccesInvoice}=require("./services/order")
+const {generateSuccesInvoice,sendNotificationToUser}=require("./services/order");
 
 const port = process.env.PORT || "5000";
 const app = express();
@@ -16,6 +18,7 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 const http = require("http");
+const order = require("./models/order");
 const server = http.createServer(app);
 const io = require("socket.io")(server);
 redisClient.connect();
@@ -46,6 +49,7 @@ mongoose
               driver.deviceToken
             ) {
               // send notification to driver
+              console.log("send notification to driver.");
               messaging().send({
                 token: driver.deviceToken,
                 notification: {
@@ -71,8 +75,26 @@ mongoose
           console.log(error);
         }
       });
+      const task1=cron.schedule("*/2 * * * *",async ()=>{
+        try {
+          console.log("Rejecting orders.....");
+          const orders=await orderModel.find({orderStatus:"INITIATED"});
+          let twoMinutes=2*60*60*1000;
+          for(var i=0;i<orders.length;i++){
+           if(new Date(orders[i].createdAt).getTime()>twoMinutes){
+                   await order.findOneAndUpdate({_id:orders[i]._id},{orderStatus:"REJECTED"});
+                   let userDetails=await userModel.findOne({_id:orders[i].userId});
+                   let driverDetails=await driverModel.findOne({_id:orders[i].driverId})
+                   sendNotificationToUser(userDetails.deviceToken,orders[i],"ORDER_REJECTED",driverDetails);
+            }
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      })
 
       task.start();
+      task1.start();
     });
   });
 mongoose.connection.on("open", () => {

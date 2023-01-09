@@ -1,5 +1,7 @@
 const moment = require("moment-timezone");
 const { redisClient, pub } = require("../redis");
+require("dotenv").config();
+
 const drivers = [];
 function driverJoin(id, vehicleId, location) {
   const driver = { id, vehicleId, location };
@@ -50,7 +52,29 @@ const deleteOrderRedis = async (orderId) => {
   await redisClient.hDel("order", orderId.toString());
 };
 
-const getInvoiceHTML = (orderDetails,invoiceNumber,userDetails,goodDetails,driverDetails,vehicleName,deliveredDate) => {
+const getInvoiceHTML = (
+  orderDetails,
+  invoiceNumber,
+  userDetails,
+  goodDetails,
+  driverDetails,
+  vehicleName,
+  deliveredDate
+) => {
+  let mapImage = `https://maps.googleapis.com/maps/api/staticmap?center=${orderDetails?.source?.latitude}%2c%20${orderDetails?.source?.longitude}&zoom=12&size=350x250`;
+  if (orderDetails?.source?.latitude) {
+    mapImage += `&markers=color:blue%7Clabel:S%7C${orderDetails?.source?.latitude},${orderDetails?.source?.longitude}`;
+  }
+  if (orderDetails?.stop1?.latitude) {
+    mapImage += `&markers=color:red%7Clabel:1%7C${orderDetails?.stop1?.latitude},${orderDetails?.stop1?.longitude}`;
+  }
+  if (orderDetails?.stop2?.latitude) {
+    mapImage += `&markers=color:red%7Clabel:2%7C${orderDetails?.stop2?.latitude},${orderDetails?.stop2?.longitude}`;
+  }
+  if (orderDetails?.destination?.latitude) {
+    mapImage += `&markers=color:green%7Clabel:D%7C${orderDetails?.destination?.latitude},${orderDetails?.destination?.longitude}`;
+  }
+  mapImage += `&key=${process.env.GOOGLE_MAP_API_KEY}`;
   let html = `
     <!DOCTYPE html>
 <html lang="en">
@@ -358,6 +382,9 @@ const getInvoiceHTML = (orderDetails,invoiceNumber,userDetails,goodDetails,drive
         margin-bottom:5px
         padding-bottom:10px
       }
+      .map{
+        margin-left:50px
+      }
     </style>
   </head>
   <body>
@@ -396,7 +423,11 @@ const getInvoiceHTML = (orderDetails,invoiceNumber,userDetails,goodDetails,drive
           </div>
           <div class="Invoicecontainer">
             <div class="Invoicetitle">Date :</div>
-            <div class="InvoiceNumber">${new Date().toDateString().split(" ").slice(1).join(" ")}</div>
+            <div class="InvoiceNumber">${new Date()
+              .toDateString()
+              .split(" ")
+              .slice(1)
+              .join(" ")}</div>
           </div>
         </div>
       </div>
@@ -406,9 +437,9 @@ const getInvoiceHTML = (orderDetails,invoiceNumber,userDetails,goodDetails,drive
             class="image"
             src="https://www.simplilearn.com/ice9/free_resources_article_thumb/what_is_image_Processing.jpg"
           />
-        </div>`
-      if(orderDetails.orderStatus=="CANCELLED"){
-        html+= `<div class="containerRight">
+        </div>`;
+  if (orderDetails.orderStatus == "CANCELLED") {
+    html += `<div class="containerRight">
         <div class="billContainer">
           <div class="billAmount">Cancellation charge</div>
           <div class="billAmount">₹0</div>
@@ -426,10 +457,9 @@ const getInvoiceHTML = (orderDetails,invoiceNumber,userDetails,goodDetails,drive
           <div class="totalAmount">₹0</div>
         </div>
       </div>
-    </div>`
-      }
-      else{
-        html+= `<div class="containerRight">
+    </div>`;
+  } else {
+    html += `<div class="containerRight">
         <div class="billContainer">
           <div class="billAmount">Total Amount</div>
           <div class="billAmount">₹ ${orderDetails?.totalAmount}</div>
@@ -457,14 +487,16 @@ const getInvoiceHTML = (orderDetails,invoiceNumber,userDetails,goodDetails,drive
       </div>
     </div>
     </div>
-    `
-      }
-      html+=`<div class="headerContainer1">
+    `;
+  }
+  html += `<div class="headerContainer1">
         <div class="boxcontainer">
           <div class="userContainer">
             <div class="billContainer">
               <div class="name">CONSIGNOR NAME :</div>
-              <div class="value">${userDetails.firstName+" "+userDetails.lastName}</div>
+              <div class="value">${
+                userDetails.firstName + " " + userDetails.lastName
+              }</div>
             </div>
             <div class="billContainer">
               <div class="name">COMPANY NAME :</div>
@@ -484,7 +516,11 @@ const getInvoiceHTML = (orderDetails,invoiceNumber,userDetails,goodDetails,drive
           <div class="userContainer1">
             <div class="billContainer">
               <div class="name">CONSIGNEE NAME :</div>
-              <div class="value">${orderDetails.destination.name?orderDetails.destination.name:""}</div>
+              <div class="value">${
+                orderDetails.destination.name
+                  ? orderDetails.destination.name
+                  : ""
+              }</div>
             </div>
           </div>
           <!-- =============================================================================================== -->
@@ -502,7 +538,7 @@ const getInvoiceHTML = (orderDetails,invoiceNumber,userDetails,goodDetails,drive
         <!-- ================================================================================================================================================================================================================================================================================== -->
         <div class="boxcontainer">`;
 
-  if (driverDetails?.driverName&&orderDetails.orderStatus!=="CANCELLED") {
+  if (driverDetails?.driverName && orderDetails.orderStatus !== "CANCELLED") {
     html += `<div class="drivercontainer">
     <div class="driverbox">
       <div class="driverStatus">${vehicleName} | ${driverDetails?.vehicleNumber}</div>
@@ -515,7 +551,7 @@ const getInvoiceHTML = (orderDetails,invoiceNumber,userDetails,goodDetails,drive
     </div>
   </div>`;
   }
-  if(orderDetails.orderStatus=="CANCELLED"){
+  if (orderDetails.orderStatus == "CANCELLED") {
     html += `<div class="container1">
   <!-- completed -->
   <div class="step completed">
@@ -528,7 +564,9 @@ const getInvoiceHTML = (orderDetails,invoiceNumber,userDetails,goodDetails,drive
       <div>${orderDetails?.source?.address || ""}</div>
     </div>
   </div>
-  ${orderDetails?.stop1?` <div class="step active">
+  ${
+    orderDetails?.stop1
+      ? ` <div class="step active">
   <div class="v-stepper">
     <div class="circle"></div>
     <div class="line"></div>
@@ -537,8 +575,12 @@ const getInvoiceHTML = (orderDetails,invoiceNumber,userDetails,goodDetails,drive
     <div class="location">Stop 1 Location</div>
     <div>${orderDetails?.stop1?.address || ""}</div>
   </div>
-</div>`:""}
-${orderDetails?.stop1?` <div class="step active">
+</div>`
+      : ""
+  }
+${
+  orderDetails?.stop1
+    ? ` <div class="step active">
   <div class="v-stepper">
     <div class="circle"></div>
     <div class="line"></div>
@@ -547,7 +589,9 @@ ${orderDetails?.stop1?` <div class="step active">
     <div class="location">Stop 2 Location</div>
     <div>${orderDetails?.stop2?.address || ""}</div>
   </div>
-</div>`:""}
+</div>`
+    : ""
+}
   <!-- active -->
   <div class="step active">
     <div class="v-stepper">
@@ -560,9 +604,8 @@ ${orderDetails?.stop1?` <div class="step active">
       <div>${orderDetails?.destination?.address || ""}</div>
     </div>
   </div>
-</div>`
-  }
-  else{
+</div>`;
+  } else {
     html += `<div class="container1">
     <!-- completed -->
     <div class="step completed">
@@ -577,7 +620,8 @@ ${orderDetails?.stop1?` <div class="step active">
       </div>
     </div>
     ${
-      orderDetails?.stop1?` <div class="step active">
+      orderDetails?.stop1
+        ? ` <div class="step active">
       <div class="v-stepper">
         <div class="circle"></div>
         <div class="line"></div>
@@ -587,10 +631,12 @@ ${orderDetails?.stop1?` <div class="step active">
         <div class="date">${orderDetails?.stop1?.deliveredAt || ""}</div>
         <div>${orderDetails?.stop1?.address || ""}</div>
       </div>
-    </div>`:""
+    </div>`
+        : ""
     }
     ${
-      orderDetails?.stop2?` <div class="step active">
+      orderDetails?.stop2
+        ? ` <div class="step active">
       <div class="v-stepper">
         <div class="circle"></div>
         <div class="line"></div>
@@ -600,7 +646,8 @@ ${orderDetails?.stop1?` <div class="step active">
         <div class="date">${orderDetails?.stop2?.deliveredAt || ""}</div>
         <div>${orderDetails?.stop2?.address || ""}</div>
       </div>
-    </div>`:""
+    </div>`
+        : ""
     }
     <!-- active -->
     <div class="step active">
@@ -610,14 +657,18 @@ ${orderDetails?.stop1?` <div class="step active">
       </div>
       <div class="content">
         <div class="location">Drop Location</div>
-        <div class="date">${deliveredDate?deliveredDate || "":""}</div>
+        <div class="date">${deliveredDate ? deliveredDate || "" : ""}</div>
         <div>${orderDetails?.destination?.address || ""}</div>
       </div>
     </div>
-  </div>`
+  </div>`;
   }
- 
-         html+= `<div class="footter"></div>
+
+  html += `
+  <div class="map">
+      <img src="${mapImage}"/>
+  </div>
+  <div class="footter"></div>
         </div>
       </div>
       <div class="headerContainer2">

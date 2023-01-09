@@ -12,8 +12,10 @@ const user = new Schema({
   accountStatus: { type: Boolean, default: true },
   deActivatedReason: { type: String, required: false },
   minTransactionValue: { type: Number, default: 500 },
-  gstNumber : {type: String,required :false},
-  gstAddress : {type: String,required :false},
+  gstNumber: { type: String, required: false },
+  gstAddress: { type: String, required: false },
   deviceToken: { type: String, required: false },
+  createdAt: { type: String },
+  updatedAt: { type: String },
 });
 module.exports = mongoose.model("User", user);

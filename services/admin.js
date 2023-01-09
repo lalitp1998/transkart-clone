@@ -143,6 +143,23 @@ const approveDriverDetails = async (driverData) => {
           driverDetails.vehicleDocumentStatus == "ACCEPTED"
         ) {
           driverDetails.accountStatus = "ACTIVE";
+          if (driverDetails.deviceToken) {
+            messaging().send({
+              token: driverDetails.deviceToken,
+              notification: {
+                title: "DOCUMENTS VERIFIED",
+                body: `Your Documents are verified by Admin`,
+              },
+              android: {
+                priority: "high",
+                notification: {
+                  title: "DOCUMENTS VERIFIED",
+                  body: `Your Documents are verified by Admin`,
+                  sound: "default",
+                },
+              },
+            });
+          }
         }
         driverDetails.updatedAtByAdmin = currentDate();
         let response = await driverModel.findOneAndUpdate(
@@ -150,23 +167,6 @@ const approveDriverDetails = async (driverData) => {
           { $set: driverDetails },
           { new: true }
         );
-        if (driverDetails.deviceToken) {
-          messaging().send({
-            token: driverDetails.deviceToken,
-            notification: {
-              title: "DOCUMENTS VERIFIED",
-              body: `Your Documents are verified by Admin`,
-            },
-            android: {
-              priority: "high",
-              notification: {
-                title: "DOCUMENTS VERIFIED",
-                body: `Your Documents are verified by Admin`,
-                sound: "default",
-              },
-            },
-          });
-        }
         return { data: response };
       }
     } else {

@@ -32,7 +32,6 @@ const driver = new Schema({
   createdAt: { type: String },
   deliveryStatus: { type: String, default: "FREE" },
   notes: { type: String, default: "DOCUMENT_VERIFICATION" },
-  createdAt: { type: String },
   updatedAtByDriver: { type: String },
   updatedAtByAdmin: { type: String },
   deviceToken: { type: String, required: false },

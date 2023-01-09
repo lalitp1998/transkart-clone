@@ -7,9 +7,9 @@ const vehicleModel = require("../models/vehicle");
 const paymentService = require("./payment");
 const transactionService = require("./transaction");
 const goodModel = require("../models/good");
-const invoiceModel=require("../models/invoice")
+const invoiceModel = require("../models/invoice");
 const { messaging } = require("../firebase-config");
-const generateUniqueId = require('generate-unique-id');
+const generateUniqueId = require("generate-unique-id");
 const {
   currentDate,
   setOrderRedis,
@@ -26,7 +26,7 @@ const { getGoodName } = require("./good");
 const googleClient = new Client({});
 const pdf = require("html-pdf");
 const sendEmail = require("../utils/ses");
-const path = require("path");
+require("dotenv").config();
 const getUserOrders = async (userId) => {
   try {
     const userOrders = await orderModel.find({
@@ -313,7 +313,7 @@ const sendNotificationToUser = (token, order, type, driverDetails) => {
         token: token,
         notification: {
           title: "ORDER REJECTED",
-          body: `Your Order has been rejected`,
+          body: `No driver was available`,
         },
         data: {
           orderId: order._id.toString(),
@@ -334,28 +334,28 @@ const sendNotificationToUser = (token, order, type, driverDetails) => {
     }
     if (type == "ORDER_CANCELLED") {
       // for (let i = 0; i < deviceArr.length; i++) {
-        messaging().send({
-          token: token,
+      messaging().send({
+        token: token,
+        notification: {
+          title: "ORDER CANCELLED",
+          body: `You have cancelled order of ${order.source.address.toString()} to ${order.destination.address.toString()}`,
+        },
+        data: {
+          orderId: order._id.toString(),
+          amount: order.totalAmount.toString(),
+          source: order.source.address.toString(),
+          destination: order.destination.address.toString(),
+          timeStamp: currentDate(),
+        },
+        android: {
+          priority: "high",
           notification: {
             title: "ORDER CANCELLED",
-            body: `You have cancelled order of ${order.source.address.toString()} to ${order.destination.address.toString()}`,
+            body: `Your delivery Order has been cancelled`,
+            sound: "default",
           },
-          data: {
-            orderId: order._id.toString(),
-            amount: order.totalAmount.toString(),
-            source: order.source.address.toString(),
-            destination: order.destination.address.toString(),
-            timeStamp: currentDate(),
-          },
-          android: {
-            priority: "high",
-            notification: {
-              title: "ORDER CANCELLED",
-              body: `Your delivery Order has been cancelled`,
-              sound: "default",
-            },
-          },
-        });
+        },
+      });
       // }
     }
   } catch (error) {
@@ -394,80 +394,80 @@ const sendNotification = async (deviceArr, order, type) => {
     if (type == "ORDER_ACCEPTED") {
       console.log("ORD", order);
       // for (let i = 0; i < deviceArr.length; i++) {
-        messaging().send({
-          token: deviceArr[0],
+      messaging().send({
+        token: deviceArr[0],
+        notification: {
+          title: "ORDER CONFIRMED",
+          body: `You have Confirm order from ${order.source.address}`,
+        },
+        data: {
+          orderId: order._id.toString(),
+          amount: order.totalAmount.toString(),
+          source: order.source.address.toString(),
+          destination: order.destination.address.toString(),
+          timeStamp: currentDate(),
+        },
+        android: {
+          priority: "high",
           notification: {
             title: "ORDER CONFIRMED",
             body: `You have Confirm order from ${order.source.address}`,
+            sound: "default",
           },
-          data: {
-            orderId: order._id.toString(),
-            amount: order.totalAmount.toString(),
-            source: order.source.address.toString(),
-            destination: order.destination.address.toString(),
-            timeStamp: currentDate(),
-          },
-          android: {
-            priority: "high",
-            notification: {
-              title: "ORDER CONFIRMED",
-              body: `You have Confirm order from ${order.source.address}`,
-              sound: "default",
-            },
-          },
-        });
+        },
+      });
       // }
     }
     if (type == "ORDER_DELIVERED") {
       // for (let i = 0; i < deviceArr.length; i++) {
-        messaging().send({
-          token: deviceArr[0],
+      messaging().send({
+        token: deviceArr[0],
+        notification: {
+          title: "ORDER DELIVERED",
+          body: `you have delivered Order at ${order.destination.address}`,
+        },
+        data: {
+          orderId: order._id.toString(),
+          amount: order.totalAmount.toString(),
+          source: order.source.address.toString(),
+          destination: order.destination.address.toString(),
+          timeStamp: currentDate(),
+        },
+        android: {
+          priority: "high",
           notification: {
             title: "ORDER DELIVERED",
             body: `you have delivered Order at ${order.destination.address}`,
+            sound: "default",
           },
-          data: {
-            orderId: order._id.toString(),
-            amount: order.totalAmount.toString(),
-            source: order.source.address.toString(),
-            destination: order.destination.address.toString(),
-            timeStamp: currentDate(),
-          },
-          android: {
-            priority: "high",
-            notification: {
-              title: "ORDER DELIVERED",
-              body: `you have delivered Order at ${order.destination.address}`,
-              sound: "default",
-            },
-          },
-        });
+        },
+      });
       // }
     }
     if (type == "ORDER_CANCELLED") {
       // for (let i = 0; i < deviceArr.length; i++) {
-        messaging().send({
-          token: deviceArr[0],
+      messaging().send({
+        token: deviceArr[0],
+        notification: {
+          title: "ORDER CANCELLED",
+          body: `Your delivery Order has been cancelled`,
+        },
+        data: {
+          orderId: order._id.toString(),
+          amount: order.totalAmount.toString(),
+          source: order.source.address.toString(),
+          destination: order.destination.address.toString(),
+          timeStamp: currentDate(),
+        },
+        android: {
+          priority: "high",
           notification: {
             title: "ORDER CANCELLED",
             body: `Your delivery Order has been cancelled`,
+            sound: "default",
           },
-          data: {
-            orderId: order._id.toString(),
-            amount: order.totalAmount.toString(),
-            source: order.source.address.toString(),
-            destination: order.destination.address.toString(),
-            timeStamp: currentDate(),
-          },
-          android: {
-            priority: "high",
-            notification: {
-              title: "ORDER CANCELLED",
-              body: `Your delivery Order has been cancelled`,
-              sound: "default",
-            },
-          },
-        });
+        },
+      });
       // }
     }
   } catch (error) {
@@ -506,7 +506,7 @@ const cancelOrder = async (orderId) => {
     let redisOrder = JSON.parse(
       await redisClient.hGet("order", orderId.toString())
     );
-    console.log("redisOrder.orderStatus",redisOrder.orderStatus)
+    console.log("redisOrder.orderStatus", redisOrder.orderStatus);
     if (
       redisOrder.orderStatus == "INITIATED" ||
       redisOrder.orderStatus == "ACCEPTED"
@@ -552,15 +552,14 @@ const cancelOrder = async (orderId) => {
     return { error: error };
   }
 };
-const generateSuccesInvoice=async (id)=>{
+const generateSuccesInvoice = async (id) => {
   try {
-    let orderDetails=await orderModel.findOne({_id:id});
+    let orderDetails = await orderModel.findOne({ _id: id });
     await generateInvoice(orderDetails);
-    
   } catch (error) {
-    console.log("error",error);
+    console.log("error", error);
   }
-}
+};
 
 const claimOrder = async (orderId, driverId) => {
   try {
@@ -703,7 +702,7 @@ const orderDelivered = async (orderData) => {
       driverDetails,
       "driver"
     );
-    
+
     await transactionService.addTransaction(
       {
         userId: driverDetails._id,
@@ -794,6 +793,7 @@ const uploadSignature = async (orderData) => {
         `orders/${orderData.orderId}/senderSignature.png`,
         orderData.senderSignature.buffer
       );
+      orderData.status = "PICKED_UP"
       const orderDetails = await orderModel.findOneAndUpdate(
         { _id: orderData.orderId },
         { $set: { senderSignature: signature,trackingUrl:"http://192.168.1.33:5000",orderStatus:"PICKED_UP" } },
@@ -808,7 +808,7 @@ const uploadSignature = async (orderData) => {
         orderData.stop1Signature.buffer
       );
       order.stop1.signature = signature;
-      order.stop1.deliveredAt=new Date();
+      order.stop1.deliveredAt = new Date();
       const orderDetails = await orderModel.findOneAndUpdate(
         { _id: orderData.orderId },
         { $set: order },
@@ -822,7 +822,7 @@ const uploadSignature = async (orderData) => {
         orderData.stop2Signature.buffer
       );
       order.stop2.signature = signature;
-      order.stop2.deliveredAt=new Date();
+      order.stop2.deliveredAt = new Date();
       const orderDetails = await orderModel.findOneAndUpdate(
         { _id: orderData.orderId },
         { $set: order },
@@ -836,7 +836,7 @@ const uploadSignature = async (orderData) => {
         orderData.receiverSignature.buffer
       );
       order.destination.signature = signature;
-      order.deliveredAt=new Date();
+      order.deliveredAt = new Date();
       const orderDetails = await orderModel.findOneAndUpdate(
         { _id: orderData.orderId },
         { $set: order },
@@ -959,7 +959,7 @@ const findDistanceAndDuration = async (origins, destinations, waypoints) => {
         waypoints,
         travelMode: "DRIVING",
         unitSystem: 0,
-        key: "AIzaSyB4yzayOg6qqGhOmWdq8G8CFJfYxjz60ks",
+        key: process.env.GOOGLE_MAP_API_KEY,
       },
     });
     const totalDistanceAndDuration = directionsRes.data.routes[0].legs.reduce(
@@ -1121,25 +1121,40 @@ const generateInvoice = async (orderDetails) => {
     const invoiceNumber = generateUniqueId({
       length: 10,
       useLetters: false,
-      useNumbers:true
+      useNumbers: true,
     });
-    const userDetails=await userModel.findOne({_id:orderDetails.userId});
-    const goodDetails=await goodModel.findOne({_id:orderDetails.goodId});
-    const driverDetails=await driverModel.findOne({_id:orderDetails.driverId});
-    const vehicleName=await getVehicleName(orderDetails.vehicleId);
-    let deliveredDate="";
-    if(orderDetails.deliveredAt){
-      let d=new Date(new Date(orderDetails.deliveredAt).toISOString());
-     deliveredDate=new Date(orderDetails.deliveredAt).toISOString().split("T")[0]+" "+d.getHours()+":"+d.getMinutes()+":"+d.getSeconds()
+    const userDetails = await userModel.findOne({ _id: orderDetails.userId });
+    const goodDetails = await goodModel.findOne({ _id: orderDetails.goodId });
+    const driverDetails = await driverModel.findOne({
+      _id: orderDetails.driverId,
+    });
+    const vehicleName = await getVehicleName(orderDetails.vehicleId);
+    let deliveredDate = "";
+    if (orderDetails.deliveredAt) {
+      let d = new Date(new Date(orderDetails.deliveredAt).toISOString());
+      deliveredDate =
+        new Date(orderDetails.deliveredAt).toISOString().split("T")[0] +
+        " " +
+        d.getHours() +
+        ":" +
+        d.getMinutes() +
+        ":" +
+        d.getSeconds();
     }
-   
-    const html = getInvoiceHTML(orderDetails,invoiceNumber,userDetails,goodDetails,driverDetails,vehicleName,deliveredDate);
+
+    const html = getInvoiceHTML(
+      orderDetails,
+      invoiceNumber,
+      userDetails,
+      goodDetails,
+      driverDetails,
+      vehicleName,
+      deliveredDate
+    );
     return new Promise((resolve, reject) => {
       pdf
         .create(html, {
-          phantomPath:path.join(__dirname,"../../node_modules/phantomjs-prebuilt/bin/phantomjs"),
           format: "A3",
-          timeout:5000
         })
         .toBuffer(async function (err, buffer) {
           if (err) {
@@ -1160,9 +1175,9 @@ const generateInvoice = async (orderDetails) => {
             { new: true }
           );
           await invoiceModel.create({
-            invoice:location,
-            invoiceNumber:invoiceNumber
-          })
+            invoice: location,
+            invoiceNumber: invoiceNumber,
+          });
           return resolve(orderData);
         });
     });
@@ -1229,5 +1244,7 @@ module.exports = {
   getAllDriversWithinRange,
   sendInvoiceMail,
   getOrderDetails,
-  generateSuccesInvoice
+  generateSuccesInvoice,
+  sendNotificationToUser,
+  sendNotification
 };
