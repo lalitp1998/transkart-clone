@@ -10,7 +10,6 @@ const goodModel = require("../models/good");
 const invoiceModel = require("../models/invoice");
 const { messaging } = require("../firebase-config");
 const generateUniqueId = require("generate-unique-id");
-const data = require("../node_modules/phantomjs-prebuilt/bin")
 const {
   currentDate,
   setOrderRedis,
