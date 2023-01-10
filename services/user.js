@@ -77,7 +77,11 @@ const updateUser = async (userData) => {
       { $set: userData },
       { new: true }
     );
-    return { data: userDetails };
+    const supportDetails=await accountSettingModal.findOne({});
+    return { data: {...userDetails._doc,supportDetails:{
+      phone: supportDetails?.phone,
+      email: supportDetails?.email
+    }} };
   } catch (error) {
     return { error: error };
   }
