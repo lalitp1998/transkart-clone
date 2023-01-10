@@ -1155,6 +1155,7 @@ const generateInvoice = async (orderDetails) => {
       pdf
         .create(html, {
           format: "A3",
+          phantomPath: "./node_modules/phantomjs/bin/phantomjs",
         })
         .toBuffer(async function (err, buffer) {
           if (err) {
