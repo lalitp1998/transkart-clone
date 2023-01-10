@@ -2,7 +2,7 @@ const accountSettingService = require("../services/accountSetting");
 
 exports.updatePolygons = async (req, res) => {
   try {
-    if (!req.body.polygons || !req.body._id) {
+    if (!req.body.polygons) {
       return res.status(400).send({ error: "Please Pass Proper body" });
     }
     let response = await accountSettingService.updatePolygons(req.body);

@@ -52,14 +52,14 @@ const testUser = async (userData) => {
           updatedAt: date,
         });
         return { data: {...newUser._doc,supportDetails:{
-          phone: supportDetails.phone,
-          email: supportDetails.email
+          phone: supportDetails?.phone,
+          email: supportDetails?.email
         } }};
       } else {
         const supportDetails=await accountSettingModal.findOne({});
         return { data: {...userDetails._doc,supportDetails:{
-          phone: supportDetails.phone,
-          email: supportDetails.email
+          phone: supportDetails?.phone,
+          email: supportDetails?.email
         }} };
       }
     } else {

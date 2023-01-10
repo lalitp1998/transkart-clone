@@ -198,15 +198,15 @@ const testDriver = async (driverData) => {
           });
           const supportDetails=await accountSettingModal.findOne({})
           return { data: {...newDriver._doc,supportDetails:{
-            phone: supportDetails.phone,
-            email: supportDetails.email
+            phone: supportDetails?.phone,
+            email: supportDetails?.email
           }} };
         } else {
           let vehicleName = await getVehicleName(driverDetails.vehicleId);
           const supportDetails=await accountSettingModal.findOne({})
           return { data: { ...driverDetails._doc, vehicleType: vehicleName,supportDetails:{
-            phone: supportDetails.phone,
-            email: supportDetails.email
+            phone: supportDetails?.phone,
+            email: supportDetails?.email
           } } };
         }
       } else {

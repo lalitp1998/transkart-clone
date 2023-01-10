@@ -8,19 +8,36 @@ const updatePolygons = async (_polygon) => {
         _polygon.polygons.map((polygon) => [polygon.lat, polygon.lng]),
       ],
     };
-    let updatedPolygonDetails = await accountSettingModel.findByIdAndUpdate(
-      _polygon._id,
-      { $set: { polygons } },
-      { new: true }
-    );
-    const newPolygonDetails = {
-      ...updatedPolygonDetails._doc,
-      polygons: polygons.coordinates[0].map((polygon) => ({
-        lat: polygon[0],
-        lng: polygon[1],
-      })),
-    };
-    return { data: newPolygonDetails };
+    if(_polygon._id){
+      let updatedPolygonDetails = await accountSettingModel.findByIdAndUpdate(
+        _polygon._id,
+        { $set: { polygons } },
+        { new: true }
+      );
+      const newPolygonDetails = {
+        ...updatedPolygonDetails._doc,
+        polygons: polygons.coordinates[0].map((polygon) => ({
+          lat: polygon[0],
+          lng: polygon[1],
+        })),
+      };
+      return { data: newPolygonDetails };
+    }
+    else{
+      
+      let updatedPolygonDetails = await accountSettingModel.create(
+        {polygons:polygons}
+      );
+      const newPolygonDetails = {
+        ...updatedPolygonDetails._doc,
+        polygons: polygons.coordinates[0].map((polygon) => ({
+          lat: polygon[0],
+          lng: polygon[1],
+        })),
+      };
+      return { data: newPolygonDetails };
+    }
+    
   } catch (error) {
     console.log(error);
     return { error: error };
@@ -29,12 +46,17 @@ const updatePolygons = async (_polygon) => {
 
 const getPolygons = async () => {
   try {
-    const { polygons, _id } = await accountSettingModel.findOne({});
-    const polygonsDetails = polygons.coordinates[0].map((polygon) => ({
-      lat: polygon[0],
-      lng: polygon[1],
-    }));
-    return { data: { _id, polygonsDetails } };
+    const polygonData = await accountSettingModel.findOne({});
+    if(polygonData && polygonData.polygons){
+      const polygonsDetails = polygonData.polygons.coordinates[0].map((polygon) => ({
+        lat: polygon[0],
+        lng: polygon[1],
+      }));
+      return { data: { _id:polygonData._id, polygonsDetails } };
+    }
+    else{
+      return{ data : {}}
+    }
   } catch (error) {
     console.log(error);
     return { error: error };
@@ -53,12 +75,21 @@ const getAccountSetting = async () => {
 
 const updateAccountSettings = async (accountSettings) => {
   try {
-    const accountSettingsDetails = await accountSettingModel.findOneAndUpdate(
-      { _id: accountSettings._id },
-      { $set: accountSettings },
-      { new: true }
-    );
-    return { data: accountSettingsDetails };
+    if(accountSettings._id){
+      const accountSettingsDetails = await accountSettingModel.findOneAndUpdate(
+        { _id: accountSettings._id },
+        { $set: accountSettings },
+        { new: true }
+      );
+      return { data: accountSettingsDetails };
+    }
+    else{
+      delete accountSettings._id
+      const accountSettingsDetails = await accountSettingModel.create(
+       accountSettings
+      );
+      return { data: accountSettingsDetails };
+    }
   } catch (error) {
     console.log(error);
     return { error: error };

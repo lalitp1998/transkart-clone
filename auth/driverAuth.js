@@ -47,8 +47,8 @@ const validateDriverAuth = async (req, res, next) => {
           ...driverDetails._doc,
           vehicleType: vehicleName,
           supportDetails: {
-            phone: supportDetails.phone,
-            email: supportDetails.email,
+            phone: supportDetails?.phone,
+            email: supportDetails?.email,
           },
         };
         next();

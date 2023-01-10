@@ -44,8 +44,8 @@ const validateUserAuth = async (req, res, next) => {
         req.user = {
           ...userDetails._doc,
           supportDetails: {
-            phone: supportDetails.phone,
-            email: supportDetails.email,
+            phone: supportDetails?.phone,
+            email: supportDetails?.email,
           },
         };
         next();
