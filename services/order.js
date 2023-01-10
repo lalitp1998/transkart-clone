@@ -10,6 +10,7 @@ const goodModel = require("../models/good");
 const invoiceModel = require("../models/invoice");
 const { messaging } = require("../firebase-config");
 const generateUniqueId = require("generate-unique-id");
+const data = require("../node_modules/phantomjs-prebuilt/bin")
 const {
   currentDate,
   setOrderRedis,
@@ -1155,7 +1156,8 @@ const generateInvoice = async (orderDetails) => {
       pdf
         .create(html, {
           format: "A3",
-          "phantomPath": "../node_modules/phantomjs-prebuilt/bin/phantomjs"
+          localUrlAccess:true,
+          timeout:5000
         })
         .toBuffer(async function (err, buffer) {
           if (err) {
